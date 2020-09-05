@@ -89,7 +89,7 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal>
 
   /// The ordering.
   Comparable Function(TKey, TVal) get selector;
-  set selector(Comparable Function(TKey, TVal) val);
+  void setSelector(Comparable Function(TKey, TVal) val);
 
   /// call this after selector has changed
   void reSort();
@@ -154,7 +154,7 @@ class _TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal>
   @override
   Comparable Function(TKey p1, TVal p2) get selector => _selector;
   @override
-  set selector(Comparable Function(TKey, TVal) val) {
+  void setSelector(Comparable Function(TKey, TVal) val) {
     _selector = val;
     reSort();
   }
