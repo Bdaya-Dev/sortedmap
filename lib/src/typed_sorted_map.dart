@@ -1,28 +1,28 @@
 part of sortedmap;
 
-abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal,
-    TComparison extends Comparable<TComparison>> implements Map<TKey, TVal> {
-  factory TypedSortedMap([TComparison Function(TKey, TVal) selector]) {
+abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal>
+    implements Map<TKey, TVal> {
+  factory TypedSortedMap([Comparable Function(TKey, TVal) selector]) {
     return selector == null
         ? TypedSortedMap.byKey()
         : TypedSortedMap.byMapped(selector);
   }
 
   factory TypedSortedMap.byKey() {
-    return TypedSortedMapImpl._((k, v) => k as TComparison, null, null);
+    return _TypedSortedMapImpl._((k, v) => k, null, null);
   }
 
   factory TypedSortedMap.byValue() {
-    return TypedSortedMapImpl._((k, v) => v as TComparison, null, null);
+    return _TypedSortedMapImpl._((k, v) => v as Comparable, null, null);
   }
 
-  factory TypedSortedMap.byMapped(TComparison Function(TKey, TVal) selector) {
-    return TypedSortedMapImpl._(selector, null, null);
+  factory TypedSortedMap.byMapped(Comparable Function(TKey, TVal) selector) {
+    return _TypedSortedMapImpl._(selector, null, null);
   }
 
   /// Creates a [TypedSortedMap] that contains all key/value pairs of [other].
   factory TypedSortedMap.from(Map<TKey, TVal> other,
-      [TComparison Function(TKey, TVal) selector]) {
+      [Comparable Function(TKey, TVal) selector]) {
     return TypedSortedMap(selector)..addAll(other);
   }
 
@@ -37,17 +37,14 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal,
   ///
   /// If no functions are specified for [key] and [value] the default is to
   /// use the iterable value itself.
-  static TypedSortedMap<TKey, TVal, TComparison> fromIterable<
-      TItem,
-      TKey extends Comparable<TKey>,
-      TVal,
-      TComparison extends Comparable<TComparison>>(
+  static TypedSortedMap<TKey, TVal>
+      fromIterable<TItem, TKey extends Comparable<TKey>, TVal>(
     Iterable<TItem> iterable, {
     TKey Function(TItem) key,
     TVal Function(TItem) value,
-    TComparison Function(TKey, TVal) selector,
+    Comparable Function(TKey, TVal) selector,
   }) {
-    var map = TypedSortedMap<TKey, TVal, TComparison>(selector);
+    var map = TypedSortedMap<TKey, TVal>(selector);
 
     key ??= (v) => v as TKey;
     value ??= (v) => v as TVal;
@@ -69,9 +66,9 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal,
   factory TypedSortedMap.fromIterables(
     Iterable<TKey> keys,
     Iterable<TVal> values, [
-    TComparison Function(TKey, TVal) selector,
+    Comparable Function(TKey, TVal) selector,
   ]) {
-    var map = TypedSortedMap<TKey, TVal, TComparison>(selector);
+    var map = TypedSortedMap<TKey, TVal>(selector);
     var keyIterator = keys.iterator;
     var valueIterator = values.iterator;
 
@@ -91,10 +88,10 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal,
   }
 
   /// The ordering.
-  TComparison Function(TKey, TVal) get selector;
+  Comparable Function(TKey, TVal) get selector;
 
   /// Makes a copy of this map. The key/value pairs in the map are not cloned.
-  TypedSortedMap<TKey, TVal, TComparison> clone();
+  TypedSortedMap<TKey, TVal> clone();
 
   /// Get the last key in the map for which the key/value pair is strictly
   /// smaller than that of [key]. Returns [:null:] if no key was not found.
@@ -106,8 +103,8 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal,
 
   /// Gets the keys within the desired bounds and limit.
   Iterable<TKey> subkeys({
-    Pair<TKey, TComparison> start,
-    Pair<TKey, TComparison> end,
+    Pair<TKey, Comparable> start,
+    Pair<TKey, Comparable> end,
     int limit,
     bool reversed = false,
   });
@@ -115,8 +112,8 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal,
 TODO: implment the views
   /// Creates a filtered view of this map.
   FilteredMapView<TKey, TVal> filteredMapView(
-          {Pair<TKey, TComparison> start,
-          Pair<TKey, TComparison> end,
+          {Pair<TKey, Comparable> start,
+          Pair<TKey, Comparable> end,
           int limit,
           bool reversed = false}) =>
       FilteredMapView(this,
@@ -136,22 +133,21 @@ TODO: implment the views
         ..addAll(this);
 */
 
-  Pair<TKey, TComparison> _pairForKey(TKey key) =>
+  Pair<TKey, Comparable> _pairForKey(TKey key) =>
       containsKey(key) ? Pair(key, selector(key, this[key])) : null;
 }
 
-class TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal,
-        TComparsion extends Comparable<TComparsion>> extends MapBase<TKey, TVal>
-    with TypedSortedMap<TKey, TVal, TComparsion> {
-  final TComparsion Function(TKey, TVal) orderSelector;
-  TypedSortedMapImpl._(this.orderSelector, this._sortedPairs, this._map) {
+class _TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal>
+    extends MapBase<TKey, TVal> with TypedSortedMap<TKey, TVal> {
+  final Comparable Function(TKey, TVal) orderSelector;
+  _TypedSortedMapImpl._(this.orderSelector, this._sortedPairs, this._map) {
     _sortedPairs ??= TreeSet();
     _map ??= TreeMap();
   }
 
   @override
-  TComparsion Function(TKey p1, TVal p2) get selector => orderSelector;
-  TreeSet<Pair<TKey, TComparsion>> _sortedPairs;
+  Comparable Function(TKey p1, TVal p2) get selector => orderSelector;
+  TreeSet<Pair<TKey, Comparable>> _sortedPairs;
   TreeMap<TKey, TVal> _map;
 
   @override
@@ -161,8 +157,7 @@ class TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal,
   Iterable<TKey> get keys => _sortedPairs.map((p) => p.key);
 
   @override
-  TypedSortedMap<TKey, TVal, TComparsion> clone() =>
-      TypedSortedMapImpl<TKey, TVal, TComparsion>._(
+  TypedSortedMap<TKey, TVal> clone() => _TypedSortedMapImpl<TKey, TVal>._(
         orderSelector,
         TreeSet()..addAll(_sortedPairs),
         TreeMap<TKey, TVal>.from(_map),
@@ -223,8 +218,8 @@ class TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal,
 
   @override
   Iterable<TKey> subkeys({
-    Pair<TKey, TComparsion> start,
-    Pair<TKey, TComparsion> end,
+    Pair<TKey, Comparable> start,
+    Pair<TKey, Comparable> end,
     int limit,
     bool reversed = false,
   }) {
@@ -233,8 +228,8 @@ class TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal,
     return it;
   }
 
-  Iterable<TKey> _subkeys(Pair<TKey, TComparsion> start,
-      Pair<TKey, TComparsion> end, int limit, bool reversed) sync* {
+  Iterable<TKey> _subkeys(Pair<TKey, Comparable> start,
+      Pair<TKey, Comparable> end, int limit, bool reversed) sync* {
     var from = reversed ? end : start;
     Iterator it = _sortedPairs.fromIterator(from, reversed: reversed);
     var count = 0;
@@ -246,8 +241,8 @@ class TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal,
   }
 }
 
-abstract class UnmodifiableTypedSortedMap<K extends Comparable<K>, V,
-    TComp extends Comparable<TComp>> implements TypedSortedMap<K, V, TComp> {
+abstract class UnmodifiableTypedSortedMap<K extends Comparable<K>, V>
+    implements TypedSortedMap<K, V> {
   @override
   void operator []=(K key, V value) =>
       throw UnsupportedError('Map view cannot be modified.');

@@ -1,7 +1,7 @@
 import 'package:sortedmap/sortedmap.dart';
 
 void main() {
-  var map = SortedMap(Ordering.byValue());
+  var map = TypedSortedMap<String, int>.byValue();
 
   map.addAll({'a': 3, 'b': 2, 'c': 4, 'd': 1});
 
