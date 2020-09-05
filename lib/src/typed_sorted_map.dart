@@ -89,6 +89,7 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal>
 
   /// The ordering.
   Comparable Function(TKey, TVal) get selector;
+  set selector(Comparable Function(TKey, TVal) val);
 
   /// Makes a copy of this map. The key/value pairs in the map are not cloned.
   TypedSortedMap<TKey, TVal> clone();
@@ -139,14 +140,24 @@ TODO: implment the views
 
 class _TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal>
     extends MapBase<TKey, TVal> with TypedSortedMap<TKey, TVal> {
-  final Comparable Function(TKey, TVal) orderSelector;
-  _TypedSortedMapImpl._(this.orderSelector, this._sortedPairs, this._map) {
+  Comparable Function(TKey, TVal) _selector;
+  _TypedSortedMapImpl._(
+      Comparable Function(TKey, TVal) selector, this._sortedPairs, this._map) {
+    _selector = selector;
     _sortedPairs ??= TreeSet();
     _map ??= TreeMap();
   }
 
   @override
-  Comparable Function(TKey p1, TVal p2) get selector => orderSelector;
+  Comparable Function(TKey p1, TVal p2) get selector => _selector;
+  @override
+  set selector(Comparable Function(TKey, TVal) val) {
+    _selector = val;
+    var oldMap = Map<TKey, TVal>.from(_map);
+    clear();
+    addAll(oldMap);
+  }
+
   TreeSet<Pair<TKey, Comparable>> _sortedPairs;
   TreeMap<TKey, TVal> _map;
 
@@ -158,7 +169,7 @@ class _TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal>
 
   @override
   TypedSortedMap<TKey, TVal> clone() => _TypedSortedMapImpl<TKey, TVal>._(
-        orderSelector,
+        _selector,
         TreeSet()..addAll(_sortedPairs),
         TreeMap<TKey, TVal>.from(_map),
       );
