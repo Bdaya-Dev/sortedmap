@@ -22,3 +22,4 @@ part 'src/sortedmap.dart';
 part 'src/ordering.dart';
 part 'src/pair.dart';
 part 'src/treemap.dart';
+part 'src/typed_sorted_map.dart';
