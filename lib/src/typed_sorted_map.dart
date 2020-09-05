@@ -91,6 +91,9 @@ abstract class TypedSortedMap<TKey extends Comparable<TKey>, TVal>
   Comparable Function(TKey, TVal) get selector;
   set selector(Comparable Function(TKey, TVal) val);
 
+  /// call this after selector has changed
+  void reSort();
+
   /// Makes a copy of this map. The key/value pairs in the map are not cloned.
   TypedSortedMap<TKey, TVal> clone();
 
@@ -153,9 +156,7 @@ class _TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal>
   @override
   set selector(Comparable Function(TKey, TVal) val) {
     _selector = val;
-    var oldMap = Map<TKey, TVal>.from(_map);
-    clear();
-    addAll(oldMap);
+    reSort();
   }
 
   TreeSet<Pair<TKey, Comparable>> _sortedPairs;
@@ -249,6 +250,13 @@ class _TypedSortedMapImpl<TKey extends Comparable<TKey>, TVal>
       if ((reversed && cmp < 0) || (!reversed && cmp > 0)) return;
       yield it.current.key;
     }
+  }
+
+  @override
+  void reSort() {
+    var oldMap = Map<TKey, TVal>.from(_map);
+    clear();
+    addAll(oldMap);
   }
 }
 
